@@ -58,6 +58,7 @@ def create_new_screen(screen):
 
       #screen.blit(new_card, (600, 200))
     for i in range(4):
+
         card_image = pygame.image.load(CAT[set_of_cards.get_cards()[i]])
         card_image.set_colorkey((154, 102, 19))
         card_image = pygame.transform.scale(card_image, (CARD_WIDTH, CARD_HEIGHT))
@@ -80,7 +81,10 @@ def draw_the_card(screen):
     pygame.display.flip()
     return current_card
 
+
 def handle_mouse_click(event, screen):
+    print(3)
+    print('gyu')
     global show_new_card
     global current_card
     #global selected_card  # Modify the global variable
