@@ -83,8 +83,6 @@ def draw_the_card(screen):
 
 
 def handle_mouse_click(event, screen):
-    print(3)
-    print('gyu')
     global show_new_card
     global current_card
     #global selected_card  # Modify the global variable
