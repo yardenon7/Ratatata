@@ -92,6 +92,12 @@ def handle_mouse_click(event, screen):
         show_new_card = True
         create_new_screen(screen)
         current_card = draw_the_card(screen)
+        if current_card== 11:
+            used_cards.append(current_card)
+            time.sleep(0.5)
+            create_new_screen(screen)
+            current_card = draw_the_card(screen)
+            return True
     if cat_used_cards_rect.collidepoint(mouse_x, mouse_y) and not show_new_card and not len(used_cards) == 1:
         print(3)
         pygame.draw.rect(screen, (0, 255, 0), cat_used_cards_rect, 3)
@@ -118,19 +124,28 @@ def handle_mouse_click(event, screen):
                 used_cards.append(set_of_cards.get_a_specific_card(i))
                 set_of_cards.set_a_card(i, removed_value)
                 create_new_screen(screen)
+
     return False
 
-def draw_two_case(screen, event):
+def draw_two_case(screen, event, count):
     global current_card
-    create_new_screen(screen)
-    current_card = draw_the_card(screen)
-    time.sleep(3)
     mouse_x, mouse_y = event.pos
     for i, card_rect in enumerate(card_rects):
         if card_rect.collidepoint(mouse_x, mouse_y):
             used_cards.append(set_of_cards.get_a_specific_card(i))
             set_of_cards.set_a_card(i, current_card)
+            create_new_screen(screen)
+            if count == 0:
+                print(1)
+                current_card = draw_the_card(screen)
             return 1
+    if cat_used_cards_rect.collidepoint(mouse_x, mouse_y):
+        used_cards.append(current_card)
+        create_new_screen(screen)
+        if count == 0:
+            print(1)
+            current_card = draw_the_card(screen)
+        return 1
     return 0
 
 
@@ -170,8 +185,13 @@ def main():
                 finish = True
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if is_it_draw_two:
-                    count_for_draw_two += draw_two_case(screen, event)
-                is_it_draw_two = handle_mouse_click(event, screen)
+                    count_for_draw_two += draw_two_case(screen, event, count_for_draw_two)
+                else:
+                    is_it_draw_two = handle_mouse_click(event, screen)
+                if count_for_draw_two==1:
+                    count_for_draw_two=0
+                    is_it_draw_two = False
+
 
 
 
