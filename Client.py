@@ -1,7 +1,7 @@
 import socket
 import pygame
 import random
-
+import time
 from SetOfCards import SetOfCards
 
 
@@ -18,6 +18,7 @@ CARD_HEIGHT = 240
 CAT12= 'CatBackCard.png'
 used_cards = [12]
 back_card_rect=pygame.Rect(400, 200, CARD_WIDTH, CARD_HEIGHT)
+cat_used_cards_rect = pygame.Rect(1000, 200, CARD_WIDTH, CARD_HEIGHT)
 card_rects = []
 #card_rects = [(280, 540, 181, 240), (480, 540, 181, 240), (680, 540, 181, 240), (880, 540, 181, 240)]
 #card_rects = [<rect(280, 540, 181, 240)>, <rect(480, 540, 181, 240)>, <rect(680, 540, 181, 240)>, <rect(880, 540, 181, 240)>, <rect(280, 540, 181, 240)>, <rect(480, 540, 181, 240)>, <rect(680, 540, 181, 240)>, <rect(880, 540, 181, 240)>]
@@ -31,7 +32,7 @@ for number in selected_numbers:
     numbers.remove(number)
 pygame.init()
  #fgh
-def create_new_screen(screen):
+def create_new_screen(screen: object) -> object:
     global card_rects
     pygame.display.set_caption("RatATat")
     background = pygame.image.load(BACKGROUND)
@@ -89,8 +90,13 @@ def handle_mouse_click(event, screen):
     mouse_x, mouse_y = event.pos
     if back_card_rect.collidepoint(mouse_x, mouse_y) and not show_new_card:
         show_new_card = True
+        create_new_screen(screen)
         current_card = draw_the_card(screen)
-    elif show_new_card:
+    if cat_used_cards_rect.collidepoint(mouse_x, mouse_y) and not show_new_card and not len(used_cards) == 1:
+        print(3)
+        pygame.draw.rect(screen, (0, 255, 0), cat_used_cards_rect, 3)
+        pygame.display.flip()
+    if show_new_card:
         t=False
         for i, card_rect in enumerate(card_rects):
             if card_rect.collidepoint(mouse_x, mouse_y):
@@ -98,14 +104,47 @@ def handle_mouse_click(event, screen):
                 used_cards.append(set_of_cards.get_a_specific_card(i))
                 set_of_cards.set_a_card(i, current_card)
                 show_new_card = False
+        if cat_used_cards_rect.collidepoint(mouse_x, mouse_y):
+            used_cards.append(current_card)
+            show_new_card = False
+            t = True
         if t:
             create_new_screen(screen)
+    if screen.get_at((1000, 200)) == (0,255,0):
+        print(5)
+        for i, card_rect in enumerate(card_rects):
+            if card_rect.collidepoint(mouse_x, mouse_y):
+                removed_value = used_cards.pop()
+                used_cards.append(set_of_cards.get_a_specific_card(i))
+                set_of_cards.set_a_card(i, removed_value)
+                create_new_screen(screen)
+    return False
+
+def draw_two_case(screen, event):
+    global current_card
+    create_new_screen(screen)
+    current_card = draw_the_card(screen)
+    time.sleep(3)
+    mouse_x, mouse_y = event.pos
+    for i, card_rect in enumerate(card_rects):
+        if card_rect.collidepoint(mouse_x, mouse_y):
+            used_cards.append(set_of_cards.get_a_specific_card(i))
+            set_of_cards.set_a_card(i, current_card)
+            return 1
+    return 0
+
+
+
+
+
 
 
 
 
 
 def main():
+    count_for_draw_two=0
+    is_it_draw_two = False
     size = (WINDOW_WIDTH, WINDOW_HEIGHT)
     screen = pygame.display.set_mode(size)
     screen = create_new_screen(screen)
@@ -130,7 +169,11 @@ def main():
             if event.type == pygame.QUIT:
                 finish = True
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                handle_mouse_click(event, screen)
+                if is_it_draw_two:
+                    count_for_draw_two += draw_two_case(screen, event)
+                is_it_draw_two = handle_mouse_click(event, screen)
+
+
 
 
 pygame.quit()
