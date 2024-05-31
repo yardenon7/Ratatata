@@ -2,6 +2,8 @@ import socket
 import pygame
 import random
 import time
+import select
+from Protocoly import *
 from SetOfCards import SetOfCards
 
 
@@ -32,7 +34,7 @@ for number in selected_numbers:
     numbers.remove(number)
 pygame.init()
  #fgh
-def create_new_screen(screen: object) -> object:
+def create_new_screen(screen):
     global card_rects
     pygame.display.set_caption("RatATat")
     background = pygame.image.load(BACKGROUND)
@@ -158,6 +160,15 @@ def draw_two_case(screen, event, count):
 
 
 def main():
+    all_info = [numbers, used_cards, set_of_cards]
+    client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    try:
+        client_socket.connect((IP, PORT))
+    except socket.error as err:
+        print('received socket error ' + str(err))
+
+
     count_for_draw_two=0
     is_it_draw_two = False
     size = (WINDOW_WIDTH, WINDOW_HEIGHT)
@@ -168,18 +179,29 @@ def main():
     #used_cards.append(23)
     #used_cards.append(43)
     #used_cards[-1]
-
-    my_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    try:
-        my_socket.connect((IP, PORT))
-    except socket.error as err:
-        print('received socket error ' + str(err))
-    finally:
-        my_socket.close()
+    my_turn=False
+        #print screen (with new updates or no updates
     pygame.display.flip()
     finish = False
+    response = ""
     while not finish:
+        while not my_turn:
+            rlist, _, _ = select.select([client_socket], [], [])
+            print(rlist)
+            if client_socket in rlist:
+                print("not empty")
+                sock = rlist[0]
+                response = protocol_decryption_request(sock)
+                print(response)
+            screen = create_new_screen(screen)
+            if response.startswith('start'):
+                my_turn = True
+            elif response == 'ratatat':
+                print(3)
+            else:
+                numbers = response[0]
+                used_cards = response[1]
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 finish = True
