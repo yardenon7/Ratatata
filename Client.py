@@ -1,5 +1,6 @@
 import socket
 import pygame
+import pickle
 import random
 import time
 import select
@@ -38,7 +39,7 @@ show_new_card = False
 #the amount of every card in the stack
 
 numbers = []
-set_of_cards = []
+set_of_cards: SetOfCards
 '''
 numbers = [i for i in range(7)] * 4 + [7, 8] * 5 + [9] * 7 + [10, 10, 10, 11, 11, 11]
 selected_numbers = random.sample(numbers, 4)
@@ -179,11 +180,17 @@ def main():
     global numbers
     global used_cards
     global set_of_cards
-    all_info = [numbers, used_cards, set_of_cards]
+    #all_info = [numbers, used_cards, set_of_cards]
     client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
+    finish_his_turn=False
     try:
         client_socket.connect((IP, PORT))
+
+        first_msg = protocol_decryption_request(client_socket)
+        print(first_msg)
+        numbers = first_msg[1]
+        used_cards = first_msg[2]
+        set_of_cards = first_msg[3]
     except socket.error as err:
         print('received socket error ' + str(err))
 
@@ -192,7 +199,6 @@ def main():
     size = (WINDOW_WIDTH, WINDOW_HEIGHT)
     screen = pygame.display.set_mode(size)
     screen = create_new_screen(screen)
-
     #used_cards = []
     #used_cards.append(23)
     #used_cards.append(43)
@@ -204,22 +210,27 @@ def main():
     response = ""
     while not finish:
         while not my_turn:
-            rlist, _, _ = select.select([client_socket], [], [])
+            rlist, _, _ = select.select([client_socket], [], [], 0)
+            response = ''
             print(rlist)
             if rlist:
                 print("not empty")
                 sock = rlist[ZERO]
                 response = protocol_decryption_request(sock)
                 print(response)
-            screen = create_new_screen(screen)
-            if response.startswith("It's"):
-                my_turn = True
-            elif response == 'ratatat':
-                print(3)
-            else:
-                numbers = response[ZERO]
-                used_cards = response[ONE]
-                set_of_cards = response[2]
+                screen = create_new_screen(screen)
+                if str(response[0]).startswith("It's"):
+                    print(10)
+                    numbers = response[ONE]
+                    used_cards = response[2]
+                    set_of_cards = response[3]
+                    my_turn = True
+                elif response[0] == 'ratatat':
+                    print(3)
+                else:
+                    numbers = response[0]
+                    used_cards = response[1]
+                    set_of_cards = response[2]
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 finish = True
@@ -228,9 +239,23 @@ def main():
                     count_for_draw_two += draw_two_case(screen, event, count_for_draw_two)
                 else:
                     is_it_draw_two = handle_mouse_click(event, screen)
+                    if finish_his_turn:
+                        msg = [numbers, used_cards, set_of_cards]
+                        msg = pickle.dumps(msg)
+                        my_turn = False
+                        finish_his_turn = False
+                        protocol_length_request_or_respond(client_socket, msg)
+                    else:
+                        finish_his_turn = True
+
                 if count_for_draw_two==ONE:
                     count_for_draw_two=ZERO
                     is_it_draw_two = False
+                    my_turn=False
+                    msg = [numbers, used_cards, set_of_cards]
+                    msg = pickle.dumps(msg)
+                    protocol_length_request_or_respond(client_socket, msg)
+
 
 
 pygame.quit()
