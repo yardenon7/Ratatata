@@ -20,6 +20,7 @@ CAT = ["Cat0.png", "Cat1.png", "Cat2.png", "Cat3.png", "Cat4.png", "Cat5.png", "
 CARD_WIDTH = 181
 CARD_HEIGHT = 240
 CAT12= 'CatBackCard.png'
+BOUNDARY_THICKNESS = 8
 PLACEMENT_USED_CARDS= (1000, 200)
 PLACEMENT_NEW_CARD = (600, 200)
 PLACEMENT_BACK_CARD = (400, 200)
@@ -49,12 +50,18 @@ for number in selected_numbers:
 '''
 pygame.init()
 
-def create_new_screen(screen):
+def create_new_screen(screen, is_your_turn):
     global card_rects
     pygame.display.set_caption("RatATat")
     background = pygame.image.load(BACKGROUND)
     screen.blit(background, PLACEMENT_START_OF_SCREEN)
     #pygame.display.flip()
+    if is_your_turn:
+        pygame.draw.rect(screen, GREEN_COLOR, (0, 0, WINDOW_WIDTH, BOUNDARY_THICKNESS))  # Top boundary
+        pygame.draw.rect(screen, GREEN_COLOR, (0, 0, BOUNDARY_THICKNESS, WINDOW_HEIGHT))  # Left boundary
+        pygame.draw.rect(screen, GREEN_COLOR,(0, WINDOW_HEIGHT - BOUNDARY_THICKNESS, WINDOW_WIDTH, BOUNDARY_THICKNESS))  # Bottom boundary
+        pygame.draw.rect(screen, GREEN_COLOR,(WINDOW_WIDTH - BOUNDARY_THICKNESS, 0, BOUNDARY_THICKNESS, WINDOW_HEIGHT))  # Right boundary
+
     cat_back_card = pygame.image.load(CAT12)
     cat_back_card.set_colorkey(COLOR_KEY)
     cat_back_card = pygame.transform.scale(cat_back_card, (CARD_WIDTH, CARD_HEIGHT))
@@ -108,13 +115,14 @@ def handle_mouse_click(event, screen):
     mouse_x, mouse_y = event.pos
     if back_card_rect.collidepoint(mouse_x, mouse_y) and not show_new_card:
         show_new_card = True
-        create_new_screen(screen)
+        create_new_screen(screen, True)
         current_card = draw_the_card(screen)
         if current_card== ELEVEN:
             used_cards.append(current_card)
             time.sleep(0.5)
-            create_new_screen(screen)
+            create_new_screen(screen, True)
             current_card = draw_the_card(screen)
+            show_new_card = False
             return True
     if cat_used_cards_rect.collidepoint(mouse_x, mouse_y) and not show_new_card and not len(used_cards) == ONE:
         print(3)
@@ -133,7 +141,7 @@ def handle_mouse_click(event, screen):
             show_new_card = False
             t = True
         if t:
-            create_new_screen(screen)
+            create_new_screen(screen, True)
     if screen.get_at(PLACEMENT_USED_CARDS) == GREEN_COLOR:
         print(5)
         for i, card_rect in enumerate(card_rects):
@@ -141,28 +149,29 @@ def handle_mouse_click(event, screen):
                 removed_value = used_cards.pop()
                 used_cards.append(set_of_cards.get_a_specific_card(i))
                 set_of_cards.set_a_card(i, removed_value)
-                create_new_screen(screen)
+                create_new_screen(screen, True)
 
     return False
 
 
 def draw_two_case(screen, event, count):
     global current_card
+    global used_cards
     mouse_x, mouse_y = event.pos
     for i, card_rect in enumerate(card_rects):
         if card_rect.collidepoint(mouse_x, mouse_y):
             used_cards.append(set_of_cards.get_a_specific_card(i))
             set_of_cards.set_a_card(i, current_card)
-            create_new_screen(screen)
+            create_new_screen(screen, True)
             if count == ZERO:
                 print(1)
                 current_card = draw_the_card(screen)
             return ONE
     if cat_used_cards_rect.collidepoint(mouse_x, mouse_y):
         used_cards.append(current_card)
-        create_new_screen(screen)
+        create_new_screen(screen, True)
         if count == ZERO:
-            print(1)
+            print(123)
             current_card = draw_the_card(screen)
         return ONE
     return ZERO
@@ -198,7 +207,7 @@ def main():
     is_it_draw_two = False
     size = (WINDOW_WIDTH, WINDOW_HEIGHT)
     screen = pygame.display.set_mode(size)
-    screen = create_new_screen(screen)
+    screen = create_new_screen(screen, False)
     #used_cards = []
     #used_cards.append(23)
     #used_cards.append(43)
@@ -212,34 +221,48 @@ def main():
         while not my_turn:
             rlist, _, _ = select.select([client_socket], [], [], 0)
             response = ''
-            print(rlist)
             if rlist:
                 print("not empty")
                 sock = rlist[ZERO]
                 response = protocol_decryption_request(sock)
                 print(response)
-                screen = create_new_screen(screen)
+                screen = create_new_screen(screen, False)
                 if str(response[0]).startswith("It's"):
                     print(10)
                     numbers = response[ONE]
                     used_cards = response[2]
                     set_of_cards = response[3]
+                    screen = create_new_screen(screen, True)
                     my_turn = True
                 elif response[0] == 'ratatat':
-                    print(3)
+                    finish = True
+                    break
                 else:
                     numbers = response[0]
                     used_cards = response[1]
-                    set_of_cards = response[2]
+                    #set_of_cards = response[2]
+                    screen = create_new_screen(screen, False)
+                    print(set_of_cards)
+            if not my_turn and not is_it_draw_two:
+                screen = create_new_screen(screen, False)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    finish = True
+                    break
+
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 finish = True
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                top_length = len(used_cards)
+                top_card = used_cards[-1]
                 if is_it_draw_two:
+                    print(5)
+                    print(count_for_draw_two)
                     count_for_draw_two += draw_two_case(screen, event, count_for_draw_two)
                 else:
                     is_it_draw_two = handle_mouse_click(event, screen)
-                    if finish_his_turn:
+                    if not is_it_draw_two and (top_length != len(used_cards) or top_card != used_cards[-1]):
                         msg = [numbers, used_cards, set_of_cards]
                         msg = pickle.dumps(msg)
                         my_turn = False
@@ -248,7 +271,8 @@ def main():
                     else:
                         finish_his_turn = True
 
-                if count_for_draw_two==ONE:
+                if count_for_draw_two==2:
+                    #draw_two_case(screen, event, count_for_draw_two)
                     count_for_draw_two=ZERO
                     is_it_draw_two = False
                     my_turn=False
@@ -256,6 +280,12 @@ def main():
                     msg = pickle.dumps(msg)
                     protocol_length_request_or_respond(client_socket, msg)
 
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_SPACE:
+                    msg = ["ratatat"]
+                    msg = pickle.dumps(msg)
+                    my_turn = False
+                    protocol_length_request_or_respond(client_socket, msg)
 
 
 pygame.quit()
