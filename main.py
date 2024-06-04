@@ -34,7 +34,7 @@ def check_who_wins(the_decks):
 
     # Iterate through each list in the list_of_lists
     for index, sublist in enumerate(the_decks):
-        current_sum = sum(sublist.get_cards())  # Calculate sum of current sublist
+        current_sum = sum_the_deck(sublist.get_cards())  # Calculate sum of current sublist
         if current_sum < min_sum:
             min_sum = current_sum
             min_sum_indices = [index]
@@ -43,6 +43,15 @@ def check_who_wins(the_decks):
 
     return min_sum_indices
 
+
+def sum_the_deck(deck):
+    total = 0
+    for item in deck:
+        if item <10:
+            total += item
+        else:
+            total += 10
+    return total
 def main():
     global numbers
     global used_cards

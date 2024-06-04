@@ -14,6 +14,7 @@ WINDOW_WIDTH = 1373
 WINDOW_HEIGHT = 810
 WHITE = (255, 255, 255)
 COLOR_KEY = 154, 102, 19
+BLACK_COLOR = (0, 0, 0)
 GREEN_COLOR = (0, 255, 0)
 BACKGROUND = 'CatBackground.jpg'
 CAT = ["Cat0.png", "Cat1.png", "Cat2.png", "Cat3.png", "Cat4.png", "Cat5.png", "Cat6.png", "Cat7.png", "Cat8.png", "Cat9.png", "CatPeek.png", "CatDraw2.png", "CatBlank.png"]
@@ -49,6 +50,15 @@ for number in selected_numbers:
     numbers.remove(number)
 '''
 pygame.init()
+#font = pygame.font.SysFont(None, 36)
+'''
+def display_message(screen, message):
+    font = pygame.font.SysFont(None, 36)
+    text_surface =font.render(message, True, BLACK_COLOR)
+    text_rect = text_surface.get_rect(center=(500, 200))
+    screen.blit(text_surface, text_rect)
+    pygame.display.flip()
+'''
 
 def create_new_screen(screen, is_your_turn):
     global card_rects
@@ -200,92 +210,94 @@ def main():
         numbers = first_msg[1]
         used_cards = first_msg[2]
         set_of_cards = first_msg[3]
-    except socket.error as err:
-        print('received socket error ' + str(err))
 
-    count_for_draw_two=ZERO
-    is_it_draw_two = False
-    size = (WINDOW_WIDTH, WINDOW_HEIGHT)
-    screen = pygame.display.set_mode(size)
-    screen = create_new_screen(screen, False)
-    #used_cards = []
-    #used_cards.append(23)
-    #used_cards.append(43)
-    #used_cards[-1]
-    my_turn=False
-        #print screen (with new updates or no updates
-    pygame.display.flip()
-    finish = False
-    response = ""
-    while not finish:
-        while not my_turn:
-            rlist, _, _ = select.select([client_socket], [], [], 0)
-            response = ''
-            if rlist:
-                print("not empty")
-                sock = rlist[ZERO]
-                response = protocol_decryption_request(sock)
-                print(response)
-                screen = create_new_screen(screen, False)
-                if str(response[0]).startswith("It's"):
-                    print(10)
-                    numbers = response[ONE]
-                    used_cards = response[2]
-                    set_of_cards = response[3]
-                    screen = create_new_screen(screen, True)
-                    my_turn = True
-                elif response[0] == 'ratatat':
-                    finish = True
-                    break
-                else:
-                    numbers = response[0]
-                    used_cards = response[1]
-                    #set_of_cards = response[2]
+        count_for_draw_two=ZERO
+        is_it_draw_two = False
+        size = (WINDOW_WIDTH, WINDOW_HEIGHT)
+        screen = pygame.display.set_mode(size)
+        screen = create_new_screen(screen, False)
+        #display_message(screen, first_msg[0])
+        #used_cards = []
+        #used_cards.append(23)
+        #used_cards.append(43)
+        #used_cards[-1]
+        my_turn=False
+            #print screen (with new updates or no updates
+        pygame.display.flip()
+        finish = False
+        response = ""
+        while not finish:
+            while not my_turn:
+                rlist, _, _ = select.select([client_socket], [], [], 0)
+                response = ''
+                if rlist:
+                    print("not empty")
+                    sock = rlist[ZERO]
+                    response = protocol_decryption_request(sock)
+                    print(response)
                     screen = create_new_screen(screen, False)
-                    print(set_of_cards)
-            if not my_turn and not is_it_draw_two:
-                screen = create_new_screen(screen, False)
+                    if str(response[0]).startswith("It's"):
+                        print(10)
+                        numbers = response[ONE]
+                        used_cards = response[2]
+                        set_of_cards = response[3]
+                        screen = create_new_screen(screen, True)
+                        #display_message(screen, response[0])
+                        my_turn = True
+                    elif response[0] == 'ratatat':
+                        finish = True
+                        break
+                    else:
+                        numbers = response[0]
+                        used_cards = response[1]
+                        #set_of_cards = response[2]
+                        screen = create_new_screen(screen, False)
+                        print(set_of_cards)
+                if not my_turn and not is_it_draw_two:
+                    screen = create_new_screen(screen, False)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        finish = True
+                        break
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     finish = True
-                    break
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    top_length = len(used_cards)
+                    top_card = used_cards[-1]
+                    if is_it_draw_two:
+                        print(5)
+                        print(count_for_draw_two)
+                        count_for_draw_two += draw_two_case(screen, event, count_for_draw_two)
+                    else:
+                        is_it_draw_two = handle_mouse_click(event, screen)
+                        if not is_it_draw_two and (top_length != len(used_cards) or top_card != used_cards[-1]):
+                            msg = [numbers, used_cards, set_of_cards]
+                            msg = pickle.dumps(msg)
+                            my_turn = False
+                            finish_his_turn = False
+                            protocol_length_request_or_respond(client_socket, msg)
+                        else:
+                            finish_his_turn = True
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                finish = True
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                top_length = len(used_cards)
-                top_card = used_cards[-1]
-                if is_it_draw_two:
-                    print(5)
-                    print(count_for_draw_two)
-                    count_for_draw_two += draw_two_case(screen, event, count_for_draw_two)
-                else:
-                    is_it_draw_two = handle_mouse_click(event, screen)
-                    if not is_it_draw_two and (top_length != len(used_cards) or top_card != used_cards[-1]):
+                    if count_for_draw_two==2:
+                        #draw_two_case(screen, event, count_for_draw_two)
+                        count_for_draw_two=ZERO
+                        is_it_draw_two = False
+                        my_turn=False
                         msg = [numbers, used_cards, set_of_cards]
                         msg = pickle.dumps(msg)
-                        my_turn = False
-                        finish_his_turn = False
                         protocol_length_request_or_respond(client_socket, msg)
-                    else:
-                        finish_his_turn = True
 
-                if count_for_draw_two==2:
-                    #draw_two_case(screen, event, count_for_draw_two)
-                    count_for_draw_two=ZERO
-                    is_it_draw_two = False
-                    my_turn=False
-                    msg = [numbers, used_cards, set_of_cards]
-                    msg = pickle.dumps(msg)
-                    protocol_length_request_or_respond(client_socket, msg)
-
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    msg = ["ratatat"]
-                    msg = pickle.dumps(msg)
-                    my_turn = False
-                    protocol_length_request_or_respond(client_socket, msg)
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE and not is_it_draw_two:
+                        msg = ["ratatat"]
+                        msg = pickle.dumps(msg)
+                        my_turn = False
+                        protocol_length_request_or_respond(client_socket, msg)
+    except socket.error as err:
+        print('received socket error ' + str(err))
 
 
 pygame.quit()
