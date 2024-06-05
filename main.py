@@ -37,7 +37,7 @@ def check_who_wins(the_decks):
         current_sum = sum_the_deck(sublist.get_cards())  # Calculate sum of current sublist
         if current_sum < min_sum:
             min_sum = current_sum
-            min_sum_indices = [index]
+            min_sum_indices = [index+1]
         elif current_sum == min_sum:
             min_sum_indices.append(index)
 
@@ -107,7 +107,7 @@ def main():
             if end_of_game:
                 break
         the_winners = check_who_wins(four_decks)
-        the_data = ["ratatat", "the winners are:" + str(the_winners)]
+        the_data = ["ratatat", "the winners are player/s number:" + str(the_winners)]
         the_data = pickle.dumps(the_data)
         for client_socket1 in client_sockets:
             protocol_length_request_or_respond(client_socket1, the_data)
