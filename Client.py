@@ -50,15 +50,19 @@ for number in selected_numbers:
     numbers.remove(number)
 '''
 pygame.init()
-#font = pygame.font.SysFont(None, 36)
-'''
+pygame.font.init()
+font1 = pygame.font.SysFont("Arial", 6, bold=False, italic=False)
+
+
 def display_message(screen, message):
-    font = pygame.font.SysFont(None, 36)
-    text_surface =font.render(message, True, BLACK_COLOR)
-    text_rect = text_surface.get_rect(center=(500, 200))
-    screen.blit(text_surface, text_rect)
-    pygame.display.flip()
-'''
+    try:
+        #pygame.font.init()
+        text_surface =font1.render(message, True, BLACK_COLOR)
+        text_rect = text_surface.get_rect(center=(500, 200))
+        screen.blit(text_surface, text_rect)
+        pygame.display.flip()
+    except pygame.error as e:
+        print("Error rendering text:", e)
 
 def create_new_screen(screen, is_your_turn):
     global card_rects
@@ -238,11 +242,12 @@ def main():
                     screen = create_new_screen(screen, False)
                     if str(response[0]).startswith("It's"):
                         print(10)
+                        print(response[0])
                         numbers = response[ONE]
                         used_cards = response[2]
                         set_of_cards = response[3]
                         screen = create_new_screen(screen, True)
-                        #display_message(screen, response[0])
+                        display_message(screen, "hella")
                         my_turn = True
                     elif response[0] == 'ratatat':
                         finish = True

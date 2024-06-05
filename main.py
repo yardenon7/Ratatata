@@ -52,6 +52,8 @@ def sum_the_deck(deck):
         else:
             total += 10
     return total
+
+
 def main():
     global numbers
     global used_cards
