@@ -49,20 +49,24 @@ set_of_cards = SetOfCards(selected_numbers)
 for number in selected_numbers:
     numbers.remove(number)
 '''
-pygame.init()
-pygame.font.init()
-font1 = pygame.font.SysFont("Arial", 6, bold=False, italic=False)
-
+#font = pygame.font.SysFont(None, 36)
 
 def display_message(screen, message):
     try:
-        #pygame.font.init()
+        font1 = pygame.font.SysFont("Arial", 45, bold=False, italic=False)
         text_surface =font1.render(message, True, BLACK_COLOR)
-        text_rect = text_surface.get_rect(center=(500, 200))
-        screen.blit(text_surface, text_rect)
+        screen.blit(text_surface, (450, 100))
         pygame.display.flip()
     except pygame.error as e:
         print("Error rendering text:", e)
+'''
+def display_message(screen, message):
+    font = pygame.font.SysFont(None, 36)
+    text_surface =font.render(message, True, BLACK_COLOR)
+    text_rect = text_surface.get_rect(center=(500, 200))
+    screen.blit(text_surface, text_rect)
+    pygame.display.flip()
+'''
 
 def create_new_screen(screen, is_your_turn):
     global card_rects
@@ -200,6 +204,10 @@ def draw_two_case(screen, event, count):
 
 
 def main():
+    pygame.init()
+    pygame.font.init()
+
+
     global numbers
     global used_cards
     global set_of_cards
@@ -242,12 +250,12 @@ def main():
                     screen = create_new_screen(screen, False)
                     if str(response[0]).startswith("It's"):
                         print(10)
-                        print(response[0])
                         numbers = response[ONE]
                         used_cards = response[2]
                         set_of_cards = response[3]
                         screen = create_new_screen(screen, True)
-                        display_message(screen, "hella")
+                        display_message(screen, response[0])
+                        #display_message(screen, response[0])
                         my_turn = True
                     elif response[0] == 'ratatat':
                         finish = True

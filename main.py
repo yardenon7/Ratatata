@@ -37,9 +37,11 @@ def check_who_wins(the_decks):
         current_sum = sum_the_deck(sublist.get_cards())  # Calculate sum of current sublist
         if current_sum < min_sum:
             min_sum = current_sum
-            min_sum_indices = [index+1]
-        elif current_sum == min_sum:
-            min_sum_indices.append(index)
+
+    for index, sublist in enumerate(the_decks):
+        current_sum = sum_the_deck(sublist.get_cards())
+        if current_sum == min_sum:
+            min_sum_indices.append(index+1)
 
     return min_sum_indices
 
@@ -52,8 +54,6 @@ def sum_the_deck(deck):
         else:
             total += 10
     return total
-
-
 def main():
     global numbers
     global used_cards
