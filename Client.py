@@ -35,6 +35,8 @@ PLACEMENT_BACK_CARD = (400, 200)
 PLACEMENT_START_OF_SCREEN = (0, 0)
 PLACEMENT_FOR_THE_FONT = (450, 100)
 THE_WAIT_TIME_FOR_DRAW_TWO = 0.5
+RATATAT_ERROR = "RatATat_ERROR"
+MESSAGE_ERROR = "an Error has occurred, please rerun the game"
 ZERO = 0
 ONE = 1
 TW0 = 2
@@ -269,10 +271,13 @@ def main():
                     sock = rlist[ZERO]
                     response = protocol_decryption_request(sock)
                     print(response)
-                    screen = create_new_screen(screen, False)
+                    if str(response[0]).startswith(RATATAT):
+                        display_message(screen, response[1])
+                        time.sleep(5)
+                    else:
+                        screen = create_new_screen(screen, False)
 
                     if str(response[0]).startswith("It's"):
-                        print(12234)
                         numbers = response[ONE]
                         used_cards = response[2]
                         set_of_cards = response[3]
@@ -342,10 +347,10 @@ def main():
         print('received socket error ' + str(err))
         print(5)
         error_screen = pygame.display.set_mode(SIZE)
-        pygame.display.set_caption("RatATat_ERROR")
+        pygame.display.set_caption(RATATAT_ERROR)
         background = pygame.image.load(BACKGROUND)
         error_screen.blit(background, PLACEMENT_START_OF_SCREEN)
-        display_message(error_screen, "an Error has occurred, please rerun the game")
+        display_message(error_screen, MESSAGE_ERROR)
         pygame.display.flip()
         time.sleep(7)
 
