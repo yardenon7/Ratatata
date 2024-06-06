@@ -6,6 +6,7 @@ tired of the pep 8 not considering it a real name
 """
 import pickle
 
+
 def protocol_length_request_or_respond(socket, request):
     len_request = str(len(request))
     len_request = len_request + '!'

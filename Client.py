@@ -38,6 +38,7 @@ PLACEMENT_FOR_THE_FONT = (450, 100)
 THE_WAIT_TIME_FOR_DRAW_TWO = 0.5
 RATATAT_ERROR = "RatATat_ERROR"
 MESSAGE_ERROR = "an Error has occurred, please rerun the game"
+TIME_TO_SLEEP_ERROR = 7
 ZERO = 0
 ONE = 1
 TW0 = 2
@@ -346,14 +347,13 @@ def main():
 
     except socket.error as err:
         print('received socket error ' + str(err))
-        print(5)
         error_screen = pygame.display.set_mode(SIZE)
         pygame.display.set_caption(RATATAT_ERROR)
         background = pygame.image.load(BACKGROUND)
         error_screen.blit(background, PLACEMENT_START_OF_SCREEN)
         display_message(error_screen, MESSAGE_ERROR)
         pygame.display.flip()
-        time.sleep(7)
+        time.sleep(TIME_TO_SLEEP_ERROR)
 
 
 pygame.quit()
