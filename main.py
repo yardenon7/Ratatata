@@ -14,6 +14,8 @@ THE_AMOUNT_OF_CARDS_IN_DECK = 4
 WINNER_MESSAGE = "the winners are player/s number:"
 THE_INPUT_MESSAGE = "Enter the number of players. The number has to be between 2 and 4: "
 RATATAT = "ratatat"
+AN_ERROR_MASSAGE = "an error has happened"
+TIMEOUT_FOR_SOCKET = 30
 
 four_decks = []
 numbers = [i for i in range(7)] * 4 + [7, 8] * 5 + [9] * 7 + [11, 11, 11]
@@ -118,11 +120,11 @@ def main():
                     the_data_to_send = pickle.dumps(the_data_to_send)
                     protocol_length_request_or_respond(client_socket, the_data_to_send)
                     while True:
-                        client_socket.settimeout(30)
+                        client_socket.settimeout(TIMEOUT_FOR_SOCKET)
                         data = protocol_decryption_request(client_socket)
                         break
                     if not data:
-                        protocol_length_request_or_respond(5)
+                        protocol_length_request_or_respond(client_socket, 5)
                     if data[0] != RATATAT:
                         numbers = data[0]
                         used_cards = data[1]
@@ -145,13 +147,11 @@ def main():
             print(err)
             for client_socket in client_sockets:
                 try:
-                    the_data = ["an error has happened"]
+                    the_data = [AN_ERROR_MASSAGE]
                     the_data = pickle.dumps(the_data)
                     protocol_length_request_or_respond(client_socket, the_data)
                 except socket.error as er:
-                    print(5)
                     print(er)
-                    pass
     except socket.error as err:
         print(f"Received socket error on server socket: {err}")
     finally:
