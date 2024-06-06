@@ -1,5 +1,10 @@
+"""
+author: Jorden Hadas
+Date: 06/06/2024
+Description: The server. The final project for 11th grade. The game which I won't say the name of because im getting
+tired of the pep 8 not considering it a real name
+"""
 import socket
-import time
 from Protocoly import *
 import pickle
 import random

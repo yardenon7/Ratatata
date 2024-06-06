@@ -1,5 +1,10 @@
+"""
+author: Jorden Hadas
+Date: 06/06/2024
+Description: The protocol. The final project for 11th grade. The game which I won't say the name of because im getting
+tired of the pep 8 not considering it a real name
+"""
 import pickle
-
 
 def protocol_length_request_or_respond(socket, request):
     len_request = str(len(request))
