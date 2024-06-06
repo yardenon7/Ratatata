@@ -272,6 +272,7 @@ def main():
                     screen = create_new_screen(screen, False)
 
                     if str(response[0]).startswith("It's"):
+                        print(12234)
                         numbers = response[ONE]
                         used_cards = response[2]
                         set_of_cards = response[3]
