@@ -17,6 +17,7 @@ IP = '127.0.0.1'
 PORT = 1729
 WINDOW_WIDTH = 1373
 WINDOW_HEIGHT = 810
+SIZE = (WINDOW_WIDTH, WINDOW_HEIGHT)
 WHITE = (255, 255, 255)
 COLOR_KEY = 154, 102, 19
 BLACK_COLOR = (0, 0, 0)
@@ -253,8 +254,7 @@ def main():
 
         count_for_draw_two = ZERO
         is_it_draw_two = False
-        size = (WINDOW_WIDTH, WINDOW_HEIGHT)
-        screen = pygame.display.set_mode(size)
+        screen = pygame.display.set_mode(SIZE)
         screen = create_new_screen(screen, False)
         my_turn = False
 
@@ -282,6 +282,11 @@ def main():
                     elif response[0] == RATATAT:
                         finish = True
                         break
+
+                    elif str(response[0]).startswith("an error"):
+                        msg = ["not important"]
+                        msg = pickle.dumps(msg)
+                        protocol_length_request_or_respond(client_socket, msg)
 
                     else:
                         numbers = response[0]
@@ -334,6 +339,14 @@ def main():
 
     except socket.error as err:
         print('received socket error ' + str(err))
+        print(5)
+        error_screen = pygame.display.set_mode(SIZE)
+        pygame.display.set_caption("RatATat_ERROR")
+        background = pygame.image.load(BACKGROUND)
+        error_screen.blit(background, PLACEMENT_START_OF_SCREEN)
+        display_message(error_screen, "an Error has occurred, please rerun the game")
+        pygame.display.flip()
+        time.sleep(7)
 
 
 pygame.quit()
