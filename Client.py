@@ -133,6 +133,8 @@ def handle_mouse_click(event, screen):
     :param screen: the screen
     :return: True if the new card is draw_two and False otherwise. The function takes care of the clicking action the client did on the screen
     """
+    global numbers
+    global used_cards
     global show_new_card
     global current_card
     # global selected_card  # Modify the global variable
@@ -140,6 +142,12 @@ def handle_mouse_click(event, screen):
 
     if back_card_rect.collidepoint(mouse_x, mouse_y) and not show_new_card:
         show_new_card = True
+
+        if len(numbers) ==0:
+            first_value = used_cards.pop(0)
+            numbers = used_cards.copy()
+            used_cards = [first_value]
+
         create_new_screen(screen, True)
         current_card = draw_the_card(screen)
 
@@ -147,12 +155,17 @@ def handle_mouse_click(event, screen):
             used_cards.append(current_card)
             time.sleep(THE_WAIT_TIME_FOR_DRAW_TWO)
             create_new_screen(screen, True)
+
+            if len(numbers) == 0:
+                first_value = used_cards.pop(0)
+                numbers = used_cards.copy()
+                used_cards = [first_value]
+
             current_card = draw_the_card(screen)
             show_new_card = False
             return True
 
     if cat_used_cards_rect.collidepoint(mouse_x, mouse_y) and not show_new_card and not len(used_cards) == ONE:
-        print(3)
         pygame.draw.rect(screen, GREEN_COLOR, cat_used_cards_rect, THREE)
         pygame.display.flip()
 
@@ -189,6 +202,7 @@ def draw_two_case(screen, event, count):
     :params screen: the screen. event: the event. count: the amount of times the player clicked on the packet
     returns: one if the player made a difference in the screen and 0 otherwise
     """
+    global numbers
     global current_card
     global used_cards
     mouse_x, mouse_y = event.pos
@@ -199,6 +213,10 @@ def draw_two_case(screen, event, count):
             create_new_screen(screen, True)
 
             if count == ZERO:
+                if len(numbers) == 0:
+                    first_value = used_cards.pop(0)
+                    numbers = used_cards.copy()
+                    used_cards = [first_value]
                 current_card = draw_the_card(screen)
             return ONE
 
@@ -207,6 +225,10 @@ def draw_two_case(screen, event, count):
         create_new_screen(screen, True)
 
         if count == ZERO:
+            if len(numbers) == 0:
+                first_value = used_cards.pop(0)
+                numbers = used_cards.copy()
+                used_cards = [first_value]
             current_card = draw_the_card(screen)
         return ONE
 
